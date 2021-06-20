@@ -8,7 +8,7 @@
 <body>
 <h2> Repositories List of {{name}}</h2>
 {% for each in list %}
-<li>{{each}}</li>
+<a href="/git/{{each.name}}/details/"> {{each.name}}</a><br>
 {% endfor %}<br>
 <a href="/git/">Back</a>
 </body>
