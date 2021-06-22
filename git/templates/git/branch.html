@@ -5,9 +5,16 @@
     <title>Title</title>
 </head>
 <body>
-<h2>hello</h2>
+<h2>total files in your repositary</h2>
+<select name="branch" id="branch">
 {% for each in branch %}
-<a href="/git/{{each.branch}}/files/" >{{each}}<br></a><br>
+<option value="{{each}}">{{each.name}}<br></option><br>
+{% endfor %}
+    </select><br>
+<!--{{list}}<br>-->
+{% for each in list %}
+{{each.name}}<br>
 {% endfor %}
 </body>
 </html>
+<a href="/git/{{repo.name}}/create_branch">Create new branch</a>
