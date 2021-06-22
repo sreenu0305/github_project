@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2> create branch for {{name}}</h2>
+{{name}}
+{% for each in repo %}
+{{each.name}}
+{% endfor %}
+
+<form action="/git/{{name}}/save_branch/" method="post">
+    {% csrf_token %}
+   branch name  <input type="text" name="branch">
+    <input type="submit" value="create branch">
+
+
+</form>
+</body>
+</html>

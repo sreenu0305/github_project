@@ -80,10 +80,22 @@ def files(request, name):
 def create_branch(request, name):
     """ create new branch """
     repoName = name
-    source_branch = 'master'
-    target_branch = 'sreenu'
+    # source_branch = 'master'
+    # target_branch = 'sreenu'
+    #
+    # repo = open_git.get_user().get_repo(repoName)
+    # sb = repo.get_branch(source_branch)
+    # repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
+    return render(request, 'git/create_branch.html', {'name': repoName})
 
-    repo = open_git.get_user().get_repo(repoName)
+
+def save_branch(request, name):
+    """ save branch"""
+    repo = open_git.get_repo("{}/{}".format(user_name, name))
+    source_branch = 'main'
+    target_branch = request.POST.get("branch")
+
+    # repo = open_git.get_user().get_repo(repoName)
     sb = repo.get_branch(source_branch)
     repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
-    return render(request,'git/create_branch.html',{})
+    return HttpResponseRedirect('/list/')
