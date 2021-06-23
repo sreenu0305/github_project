@@ -18,5 +18,11 @@
 </body>
 </html>
 <a href="/git/{{repo.name}}/create_branch">Create new branch</a><br>
-<a href="/git/{{repo.name}}/create_file">upload a new file</a><br>
-<a href="/git/list/">back</a>
+<a href="/git/{{repo.name}}/create_file">creaet new file</a><br>
+<button onclick="goBack()">Go Back</button>
+
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
