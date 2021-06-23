@@ -13,10 +13,15 @@
 
 <form action="/git/{{name}}/save_branch/" method="post">
     {% csrf_token %}
-   branch name  <input type="text" name="branch">
+    source branch : <select name="branch" id="branch"><br>
+    {% for branch in branch %}<br>
+    <option value="{{branch.name}}">{{branch.name}}</option><br>
+    {% endfor %}<br></select><br>
+    branch name: <input type="text" name="new_branch"><br>
     <input type="submit" value="create branch">
-
-
 </form>
+
+
+<a href="/git/{{name}}/details/">back</a>
 </body>
 </html>

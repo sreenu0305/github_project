@@ -6,10 +6,13 @@
     <title>Title</title>
 </head>
 <body>
+{% if msg %}
+{{msg}}
+{% endif %}
 <h2> Repositories List of {{name}}</h2>
 {% for each in list %}
 <a href="/git/{{each.name}}/details/"> {{each.name}}</a><br>
 {% endfor %}<br>
-<a href="/git/">Back</a>
+<a href="/git/">Log_out</a>
 </body>
 </html>

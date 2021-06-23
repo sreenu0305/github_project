@@ -15,6 +15,7 @@ def home(request):
 
 open_git = ""
 user_name = ''
+branch = ''
 
 
 def repo_list(request):
@@ -41,6 +42,7 @@ def details(request, name):
     print('hello')
     print(type(open_git))
     repo = open_git.get_repo("{}/{}".format(user_name, name))
+    global branch
     branch = list(repo.get_branches())
     print(branch)
     l = []
@@ -86,16 +88,31 @@ def create_branch(request, name):
     # repo = open_git.get_user().get_repo(repoName)
     # sb = repo.get_branch(source_branch)
     # repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
-    return render(request, 'git/create_branch.html', {'name': repoName})
+    return render(request, 'git/create_branch.html', {'name': repoName, 'branch': branch})
 
 
 def save_branch(request, name):
     """ save branch"""
     repo = open_git.get_repo("{}/{}".format(user_name, name))
-    source_branch = 'main'
-    target_branch = request.POST.get("branch")
-
-    # repo = open_git.get_user().get_repo(repoName)
+    source_branch = request.POST.get('branch')
+    target_branch = request.POST.get("new_branch")
     sb = repo.get_branch(source_branch)
     repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
-    return HttpResponseRedirect('/list/')
+    return render(request, 'git/rep_list.html', {"list": list, "name": user_name})
+
+
+def create_file(request, name):
+    """ to create file """
+    # open_git.create_file("test.txt", "test", "test", branch="test")
+    return render(request, 'git/upload.html', {'name': name, 'branch': branch})
+
+
+def save_file(request, name):
+    """saving file"""
+    if request.method == "POST":
+        repo = open_git.get_user().get_repo(name)
+        repo.create_file(request.POST["file"], request.POST["msg"], request.POST["commit"],
+                         branch=request.POST["branch"])
+        return render(request,'git/upload.html',{'msg':'file created  successfully'})
+    else:
+        return render(request, "git/upload.html", {"name": name, "branch": branch})
