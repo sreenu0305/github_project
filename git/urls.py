@@ -9,4 +9,6 @@ urlpatterns=[
     path('<name>/save_branch/',views.save_branch,name='save_branch'),
     path('<name>/create_file/',views.create_file,name='create_file'),
     path('<name>/save_file/',views.save_file,name='save_file'),
+    path('<name>/pull/',views.pull_request,name='pull'),
+    path('<name>/save_pull/',views.save_pull_details,name='save_pull'),
 ]

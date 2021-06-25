@@ -2,14 +2,14 @@
 {{msg}}
 {% endif%}
 <h2>hlo</h2>
-<form action="/git/{{name}}/save_file/" method="post">
+<form action="/git/{{name}}/save_file/" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     Branch :<select name="branch" id="branch">
     {% for each in branch %}
   <option value="{{each.name}}">{{each.name}}</option>
     {% endfor %}
 </select><br>
-    file : <input type="text" name="file"><br>
+   choose file : <input type="file" name="file"><br>
     message : <input type="text" name="msg"><br>
     commit : <input type="text" name="commit"><br>
     <input type="submit" name="submit">

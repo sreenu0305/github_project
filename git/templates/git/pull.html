@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>pull request</title>
+</head>
+<body>
+<h2>Create pull request</h2>
+<form action="/git/{{name}}/save_pull/" method="post">
+    {% csrf_token%}
+    pr_title:<input type="text" name="title"><br>
+    body:<input type="text" name="body"><br>
+    head:<select name="head" id="head">
+    {% for each in branch %}
+    <option value="{{each.name}}">{{each.name}}</option>
+    {% endfor %}<br>
+</select><br>
+    base:<select name="base" id="base">
+    {% for each in branch %}
+    <option value="{{each.name}}">{{each.name}}</option>
+    {% endfor %}<br>
+</select><br>
+    <input type="submit" value="submit">
+
+</form>
+<a href="/git/{{name}}/details/">back</a><br>
+</body>
+</html>

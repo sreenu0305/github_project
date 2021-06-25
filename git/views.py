@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 def home(request):
     """For home page"""
-    return render(request, 'git/index.html', {})
+    return render(request, 'git/index.html')
 
 
 open_git = ""
@@ -28,7 +28,7 @@ def repo_list(request):
             list_all.append(each)
         return render(request, 'git/rep_list.html', {"list": list_all, "name": user_name})
     else:
-        return render(request, 'git/index.html', {})
+        return render(request, 'git/index.html')
 
 
 def details(request, name):
@@ -41,7 +41,7 @@ def details(request, name):
     branch = list(repo.get_branches())
     print(branch)
     list_all = []
-    contents = repo.get_contents("")
+    contents = repo.get_contents("", )
     while contents:
 
         file_content = contents.pop(0)
@@ -93,9 +93,32 @@ def save_file(request, name):
     """saving file"""
     if request.method == "POST":
         repo = open_git.get_user().get_repo(name)
-        repo.create_file(request.POST["file"], request.POST["msg"], request.POST["commit"],
+        repo.create_file(request.FILES["file"].name, request.POST["msg"], request.FILES["file"].read(),
                          branch=request.POST["branch"])
-        return render(request, 'git/upload.html', {'msg': 'file created  successfully'})
+        return render(request, 'git/upload.html', {'name': name})
 
     else:
         return render(request, "git/upload.html", {"name": name, "branch": branch})
+
+
+def pull_request(request, name):
+    """ creating pull request """
+    return render(request, 'git/pull.html', {'name': name, 'branch': branch})
+
+
+def save_pull_details(request, name):
+    """ saving pull request"""
+    # import pdb
+    # pdb.set_trace()
+    repo = open_git.get_user().get_repo(name)
+    if request.method == "POST":
+        title = request.POST['title']
+        body = request.POST['body']
+        head = request.POST['head']
+        base = request.POST['base']
+        new_pull_request = repo.create_pull(title=title, body=body,head= head,base= base)
+        print("sreenu")
+        print(new_pull_request)
+        return HttpResponseRedirect(f'/git/{name}/details/')
+    else:
+        return render(request, 'git/pull.html', {'name': name, 'branch': branch})
