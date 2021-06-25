@@ -11,4 +11,5 @@ urlpatterns=[
     path('<name>/save_file/',views.save_file,name='save_file'),
     path('<name>/pull/',views.pull_request,name='pull'),
     path('<name>/save_pull/',views.save_pull_details,name='save_pull'),
+    path('<name>/merge/',views.merge,name='merge'),
 ]

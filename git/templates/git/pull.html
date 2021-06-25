@@ -8,20 +8,19 @@
 <h2>Create pull request</h2>
 <form action="/git/{{name}}/save_pull/" method="post">
     {% csrf_token%}
-    pr_title:<input type="text" name="title"><br>
-    body:<input type="text" name="body"><br>
-    head:<select name="head" id="head">
-    {% for each in branch %}
-    <option value="{{each.name}}">{{each.name}}</option>
-    {% endfor %}<br>
-</select><br>
-    base:<select name="base" id="base">
-    {% for each in branch %}
-    <option value="{{each.name}}">{{each.name}}</option>
-    {% endfor %}<br>
-</select><br>
-    <input type="submit" value="submit">
-
+    title : <input type="text" name="title"><br>
+    body : <input type="text" name="body"><br>
+    head : <select name="head" id="head"><br>
+    {% for branch in branch %}
+  <option value="{{branch.name}}">{{branch.name}}</option>
+    {% endfor %}
+  </select><br>
+      base: <select name="base" id="base">
+    {% for branch in branch %}
+  <option value="{{branch.name}}">{{branch.name}}</option>
+    {% endfor %}
+  </select><br>
+    <input type="submit" name="submit">
 </form>
 <a href="/git/{{name}}/details/">back</a><br>
 </body>

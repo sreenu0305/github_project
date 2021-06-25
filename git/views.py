@@ -12,6 +12,8 @@ def home(request):
 open_git = ""
 user_name = ''
 branch = ''
+pulls = ''
+list_all = ''
 
 
 def repo_list(request):
@@ -40,24 +42,26 @@ def details(request, name):
     global branch
     branch = list(repo.get_branches())
     print(branch)
+    global pulls
+    if request.method == "POST":
+        # import pdb
+        # pdb.set_trace()
+        contents = repo.get_contents("", ref=request.POST["branch"])
+        pulls = repo.get_pulls(state='open', sort='created', base=request.POST["branch"])
+    else:
+        contents = repo.get_contents("", ref="main")
+        pulls = repo.get_pulls(state='open', sort='created', base="master")
+    global list_all
     list_all = []
-    contents = repo.get_contents("", )
     while contents:
-
         file_content = contents.pop(0)
-
         if file_content.type == "dir":
-
             list_all.extend(repo.get_contents(file_content.path))
         else:
             list_all.append(file_content)
-        print(contents)
-        # l.append(content_file)
-        # print(content_file)
-    # import pdb
-    # pdb.set_trace()
-
-    return render(request, 'git/branch.html', {'branch': branch, 'list': list_all, 'repo': repo})
+    print(contents)
+    return render(request, "git/branch.html",
+                  {"branch": branch, "files": list_all, "repo": repo, "pulls": pulls})
 
 
 def create_branch(request, name):
@@ -116,9 +120,30 @@ def save_pull_details(request, name):
         body = request.POST['body']
         head = request.POST['head']
         base = request.POST['base']
-        new_pull_request = repo.create_pull(title=title, body=body,head= head,base= base)
+        new_pull_request = repo.create_pull(title=title, body=body, head=head, base=base)
         print("sreenu")
         print(new_pull_request)
         return HttpResponseRedirect(f'/git/{name}/details/')
     else:
-        return render(request, 'git/pull.html', {'name': name, 'branch': branch})
+        return render(request, 'git/pull.html', {'name': name, 'branch': branch, 'pulls': pulls})
+
+
+def merge(request, name):
+    """To merge the  branches """
+    return render(request, "git/merge.html", {"branches": branch, "name": name})
+
+
+def save_merge(request, name):
+    """ implementing the merge"""
+    my_repo = open_git.get_repo("{}/{}".format(user_name, name))
+    if request.method == "POST":
+        try:
+            base = my_repo.get_branch(request.POST["base"])
+            head = my_repo.get_branch(request.POST["head"])
+            merge_request = my_repo.merge(base, head.commit.sha, "merge to {}".format(base))
+            print(merge_request)
+        except Exception as ex:
+            print(ex)
+        return render(request, "git/branch.html", {"branches": branch, "files": list_all, "repo": my_repo})
+    else:
+        return render(request, "git/merge.html", {"branches": branch, "name": name})

@@ -1,0 +1,14 @@
+<form action="/git/{{name}}/merge/" method="post" enctype="multipart/form-data>">
+  {% csrf_token %}
+     base: <select name="base" id="base">
+    {% for branch in branches %}
+  <option value="{{branch.name}}">{{branch.name}}</option>
+    {% endfor %}
+  </select><br>
+  target : <select name="head" id="head"><br>
+    {% for branch in branches %}
+  <option value="{{branch.name}}">{{branch.name}}</option>
+    {% endfor %}
+  </select><br>
+<input type="submit" name="merge">
+</form>
