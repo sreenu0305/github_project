@@ -1,0 +1,10 @@
+<form action="/git/{{name}}/delete/" method="post">
+    {% csrf_token %}
+    delete branch : <select name="source" id="source"><br>
+    {% for each in branch %}
+  <option value="{{each.name}}">{{each.name}}</option>
+    {% endfor %}
+  </select><br>
+<input type="submit" value="delete">
+</form>
+<a href="/git/{{name}}/details/">back</a><br>

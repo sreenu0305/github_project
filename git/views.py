@@ -10,10 +10,6 @@ def home(request):
 
 
 open_git = ""
-user_name = ''
-branch = ''
-pulls = ''
-list_all = ''
 
 
 def repo_list(request):
@@ -21,28 +17,35 @@ def repo_list(request):
     if request.method == "POST":
         global open_git
         open_git = Github(request.POST["token"])
-        global user_name
         user_name = request.POST['username']
-        user = open_git.get_user(user_name).get_repos()
+        user_info = open_git.get_user(user_name)
+        request.session["username"] = user_name
+        user = user_info.get_repos()
         print(dir(open_git))
         list_all = []
         for each in user:
             list_all.append(each)
-        return render(request, 'git/rep_list.html', {"list": list_all, "name": user_name})
+        return user_name, user_info, list_all
     else:
         return render(request, 'git/index.html')
 
 
+def login_request(request):
+    """login by using github token """
+    username, user, total = repo_list(request)
+    print(username)
+    # print(user)
+    return render(request, 'git/rep_list.html', {"list": total, "name": username})
+
+
 def details(request, name):
     """ details of repository and branches of repository"""
-    print(user_name)
+    user_name = open_git.get_user().login
     print('hello')
     print(type(open_git))
     repo = open_git.get_repo("{}/{}".format(user_name, name))
-    global branch
     branch = list(repo.get_branches())
     print(branch)
-    global pulls
     if request.method == "POST":
         # import pdb
         # pdb.set_trace()
@@ -51,7 +54,6 @@ def details(request, name):
     else:
         contents = repo.get_contents("", ref="main")
         pulls = repo.get_pulls(state='open', sort='created', base="master")
-    global list_all
     list_all = []
     while contents:
         file_content = contents.pop(0)
@@ -64,9 +66,20 @@ def details(request, name):
                   {"branch": branch, "files": list_all, "repo": repo, "pulls": pulls})
 
 
+def branch_list(request, name):
+    """ get branches """
+    username = open_git.get_user().login
+    repo = open_git.get_repo("{}/{}".format(username, name))
+    branch = list(repo.get_branches())
+    return branch
+
+
 def create_branch(request, name):
     """ create new branch """
     repo_name = name
+    username = open_git.get_user().login
+    repo = open_git.get_repo("{}/{}".format(username, name))
+    branch = list(repo.get_branches())
     # source_branch = 'master'
     # target_branch = 'sreenu'
     #
@@ -78,7 +91,8 @@ def create_branch(request, name):
 
 def save_branch(request, name):
     """ save branch"""
-    repo = open_git.get_repo("{}/{}".format(user_name, name))
+    # repo = open_git.get_repo("{}/{}".format(user_name, name))
+    repo = open_git.get_user().get_repo(name)
     source_branch = request.POST.get('branch')
     target_branch = request.POST.get("new_branch")
     sourse_branch = repo.get_branch(source_branch)
@@ -90,23 +104,31 @@ def save_branch(request, name):
 def create_file(request, name):
     """ to create file """
     # open_git.create_file("test.txt", "test", "test", branch="test")
+    branch = branch_list(request, name)
+
     return render(request, 'git/upload.html', {'name': name, 'branch': branch})
 
 
 def save_file(request, name):
     """saving file"""
+    username = open_git.get_user().login
+    my_repo = open_git.get_repo("{}/{}".format(username, name))
+    branch = list(my_repo.get_branches())
     if request.method == "POST":
         repo = open_git.get_user().get_repo(name)
         repo.create_file(request.FILES["file"].name, request.POST["msg"], request.FILES["file"].read(),
                          branch=request.POST["branch"])
-        return render(request, 'git/upload.html', {'name': name})
-
+        # import pdb
+        # pdb.set_trace()
+        return HttpResponseRedirect(f'/git/{name}/details/')
     else:
         return render(request, "git/upload.html", {"name": name, "branch": branch})
 
 
 def pull_request(request, name):
     """ creating pull request """
+    username = open_git.get_user().login
+    branch = branch_list(request, name)
     return render(request, 'git/pull.html', {'name': name, 'branch': branch})
 
 
@@ -125,25 +147,56 @@ def save_pull_details(request, name):
         print(new_pull_request)
         return HttpResponseRedirect(f'/git/{name}/details/')
     else:
-        return render(request, 'git/pull.html', {'name': name, 'branch': branch, 'pulls': pulls})
+        return pull_request(request, name)
 
 
 def merge(request, name):
     """To merge the  branches """
+    username = open_git.get_user().login
+    branch = branch_list(request, name)
     return render(request, "git/merge.html", {"branches": branch, "name": name})
 
 
 def save_merge(request, name):
-    """ implementing the merge"""
+    """ implementing the merge-"""
+    # import pdb
+    # pdb.set_trace()
+    user_name = open_git.get_user().login
     my_repo = open_git.get_repo("{}/{}".format(user_name, name))
+    source_branch = my_repo.get_branch(request.POST["source_branch"])
+    target_branch = my_repo.get_branch(request.POST["target_branch"])
     if request.method == "POST":
         try:
-            base = my_repo.get_branch(request.POST["base"])
-            head = my_repo.get_branch(request.POST["head"])
-            merge_request = my_repo.merge(base, head.commit.sha, "merge to {}".format(base))
+            merge_request = my_repo.merge(source_branch.name,
+                                          target_branch.name,
+                                          "merge to {}".format(target_branch.name))
             print(merge_request)
         except Exception as ex:
             print(ex)
-        return render(request, "git/branch.html", {"branches": branch, "files": list_all, "repo": my_repo})
+        return HttpResponseRedirect(f'/git/{name}/details/')
     else:
-        return render(request, "git/merge.html", {"branches": branch, "name": name})
+        return HttpResponseRedirect(f'/git/{name}/merge/')
+
+
+def logout_request(request):
+    """views for logout and delete the session"""
+    request.session.delete()
+    return HttpResponseRedirect("/git/")
+
+
+def branch_delete(request, name):
+    """request to delete specific branch"""
+    branch = branch_list(request, name)
+    return render(request, "git/delete.html", {"branch": branch, "name": name})
+
+
+def delete(request, name):
+    """ to delete specific branch"""
+    repo = open_git.get_user().get_repo(name)
+    if request.method == "POST":
+        del_branch = request.POST["source"]
+        ref = repo.get_git_ref("heads/{}".format(del_branch))
+        ref.delete()
+        return HttpResponseRedirect(f'/git/{name}/details/')
+    else:
+        return HttpResponseRedirect(f'/git/{name}/details/')
